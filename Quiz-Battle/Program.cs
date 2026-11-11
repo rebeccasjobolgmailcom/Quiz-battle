@@ -45,11 +45,7 @@
             Console.WriteLine("Invalid choice!");
             break;
     }
-
-
-
-}
-
+ }
 
 // Create a new quiz game.
 QuizGame game = new QuizGame();
