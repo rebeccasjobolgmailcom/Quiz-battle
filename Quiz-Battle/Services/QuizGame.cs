@@ -1,8 +1,6 @@
-using Quiz_Battle.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 public class QuizGame
 {
@@ -61,5 +59,11 @@ public class QuizGame
         }
 
         return winners;
+    }
+
+    // Records a player's answer and updates their score.
+    public int RecordPlayerAnswer(Player player, bool isCorrect, int basePoints)
+    {
+        return player.RecordAnswer(isCorrect, basePoints);
     }
 }
