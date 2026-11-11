@@ -10,7 +10,7 @@ namespace Quiz_Battle.Models
         public int CorrectIndex { get; set; }
 
         //Prints the question and loops through all available options
-        public void Display()
+        public override void Display()
         {
             Console.WriteLine(Text);
             for (int i = 0; i < Options.Count; i++)
