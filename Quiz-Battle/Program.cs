@@ -45,7 +45,37 @@
             Console.WriteLine("Invalid choice!");
             break;
     }
+ }
 
+// Create a new quiz game.
+QuizGame game = new QuizGame();
 
+// Add two players.
+game.CreatePlayers(new List<string>
+{
+    "Ludwig",
+    "Erik"
+});
 
+// Get the players.
+List<Player> players = game.GetPlayers();
+
+// Give Ludwig two correct answers.
+game.RecordPlayerAnswer(players[0], true, 10);
+game.RecordPlayerAnswer(players[0], true, 20);
+
+// Give Erik one correct and one incorrect answer.
+game.RecordPlayerAnswer(players[1], true, 30);
+game.RecordPlayerAnswer(players[1], false, 20);
+
+// Show the results.
+foreach (Player player in players)
+{
+    Console.WriteLine($"{player.Name}: {player.Score} points");
+}
+
+// Find the winner.
+foreach (Player winner in game.GetWinners())
+{
+    Console.WriteLine($"Winner: {winner.Name}");
 }
