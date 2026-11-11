@@ -14,8 +14,10 @@ namespace Quiz_Battle.Models
             return Difficulty.ToLower() switch
             { "easy" => 10, "medium" => 20, "hard" => 30, _ => 0 };
         }
-        
+
         //Abstract methods to be implemented by child classes
+
+        public abstract void Display();
         public abstract bool IsValidAnswer(string answer);
         public abstract bool CheckAnswer(string answer);
         public abstract string GetCorrectAnswer();
