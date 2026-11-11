@@ -34,11 +34,32 @@ public class QuizGame
             foreach (Player player in players)
             {
                 Console.WriteLine($"It's {player.Name}'s turn!");
+
+                /*
+// Draft: connect the question and UI code when ready.
+// The objects, category and method names must be checked.
+
+Question question = questionBank.TakeQuestion(category);
+
+ui.ShowQuestion(question);
+
+string answer = ui.ReadAnswer(question);
+
+bool isCorrect = question.CheckAnswer(answer);
+
+int awardedPoints = RecordPlayerAnswer(
+    player,
+    isCorrect,
+    question.Points
+);
+*/
+
+
             }
         }
     }
 
-    // Returns the player or players with the highest score.
+    /// Returns the winners based on score, then correct answers.
     public List<Player> GetWinners()
     {
         List<Player> winners = new List<Player>();
