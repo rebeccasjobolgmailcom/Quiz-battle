@@ -7,7 +7,7 @@ namespace Quiz_Battle.Models
     {
         public bool Correct { get; set; }
         //Prints the question and the available options (Sant/falskt)
-        public void Display()
+        public override void Display()
         {
             Console.WriteLine($"Påstående: {Text}");
             Console.WriteLine("Sant (s) eller falskt (f)?");
