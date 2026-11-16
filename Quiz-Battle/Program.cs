@@ -1,4 +1,4 @@
-﻿using Quiz_Battle.UI;
+﻿
 
 ConsoleUI ui = new ConsoleUI();
 
@@ -46,7 +46,7 @@ while (true)
 
         case "2":
 
-            Console.WriteLine("Visar highscores");
+            Console.Write("Visar highscores");
             Thread.Sleep(500);
             Console.Write(" .");
             Thread.Sleep(500);
