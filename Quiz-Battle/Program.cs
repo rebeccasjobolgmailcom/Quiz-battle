@@ -1,4 +1,6 @@
-﻿while (true)
+﻿using Quiz_Battle.UI;
+
+while (true)
 {
     Console.Clear();
     Console.WriteLine("=========Quiz Battle========");
@@ -29,53 +31,37 @@
             Thread.Sleep(500);
             Console.Write(".");
             Thread.Sleep(500);
+            Console.Clear();
+            CreateGame newGame = new CreateGame();
+            List<string> players = newGame.CreatePlayers();
+            newGame.AskRounds();
+            QuizGame quizGame = new QuizGame();
+            quizGame.CreatePlayers(players);
+
             break;
 
         case "2":
-            Console.WriteLine("Showing highscores...");
+            Console.Write("Showing highscores.");
+            Thread.Sleep(500);
+            Console.Write(".");
+            Thread.Sleep(500);
+            Console.Write(".");
+            Thread.Sleep(500);
             break;
 
      
         case "3":
             
             Console.WriteLine("Goodbye!");
+            Console.ReadKey();
             return;
 
         default:
             Console.WriteLine("Invalid choice!");
+            Console.ReadKey();
             break;
     }
- }
 
-// Create a new quiz game.
-QuizGame game = new QuizGame();
 
-// Add two players.
-game.CreatePlayers(new List<string>
-{
-    "Ludwig",
-    "Erik"
-});
 
-// Get the players.
-List<Player> players = game.GetPlayers();
-
-// Give Ludwig two correct answers.
-game.RecordPlayerAnswer(players[0], true, 10);
-game.RecordPlayerAnswer(players[0], true, 20);
-
-// Give Erik one correct and one incorrect answer.
-game.RecordPlayerAnswer(players[1], true, 30);
-game.RecordPlayerAnswer(players[1], false, 20);
-
-// Show the results.
-foreach (Player player in players)
-{
-    Console.WriteLine($"{player.Name}: {player.Score} points");
-}
-
-// Find the winner.
-foreach (Player winner in game.GetWinners())
-{
-    Console.WriteLine($"Winner: {winner.Name}");
 }
