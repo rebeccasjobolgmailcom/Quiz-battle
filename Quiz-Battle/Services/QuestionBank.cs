@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using Quiz_Battle.Models;
 
@@ -31,12 +30,28 @@ namespace Quiz_Battle.Services
             LoadQuestions();
         }
 
+        //Clears any remaining questions and reloads all questions from the JSON file for a new game
+        public void ResetQuestions()
+        {
+            categories.Clear();
+            LoadQuestions();
+        }
+
         //Reads the json file and turn into a list 
         private void LoadQuestions()
         {
-            //Looks for the file in the base dictionary
-            string path = "data/questions.json";
-            if (!File.Exists(path)) return; // If the file doesn't exist, exit the method
+            //Looks for the file in the application's base execution directory
+            string path = Path.Combine(
+                AppContext.BaseDirectory,
+                "data",
+                "questions.json"
+                );
+
+            if (!File.Exists(path))
+            {
+                Console.WriteLine($"Question file not found: {path}");
+                return; // If the file doesn't exist, exit the method
+            }
 
             try
             {
