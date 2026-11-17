@@ -1,6 +1,7 @@
 
-using System.Linq;
 using Quiz_Battle.data;
+using Quiz_Battle.Models;
+using System.Linq;
 
 public class ConsoleUI
 {
@@ -141,5 +142,61 @@ public class ConsoleUI
         Console.WriteLine("Tryck på en tangent för att återgå till menyn.");
         Console.ReadKey();
     }
+
+
+
+    public string AskCategory(List<string> categories)
+    {
+        Console.WriteLine("Välj en kategori:");
+
+        for (int i = 0; i < categories.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}. {categories[i]}");
+        }
+
+        while (true)
+        {
+            Console.Write("Ditt val: ");
+
+            if (int.TryParse(Console.ReadLine(), out int choice)
+                && choice >= 1 && choice <= categories.Count)
+            {
+                return categories[choice - 1];
+            }
+
+            Console.WriteLine("Ogiltigt val, försök igen.");
+        }
+    }
+
+    public string AskAnswer(Question question)
+    {
+        string answer;
+
+        do
+        {
+            Console.Write("Ditt svar: ");
+            answer = Console.ReadLine() ?? "";
+
+            if (!question.IsValidAnswer(answer))
+            {
+                Console.WriteLine("Ogiltigt svar, försök igen.");
+            }
+
+        } while (!question.IsValidAnswer(answer));
+
+        return answer;
+    }
+
+
+    public void ShowQuestion(Question question)
+    {
+        Console.WriteLine();
+        Console.WriteLine($"Kategori: {question.Category}");
+        Console.WriteLine($"Svårighetsgrad: {question.Difficulty}");
+        Console.WriteLine();
+
+        question.Display();
+    }
+
 
 }

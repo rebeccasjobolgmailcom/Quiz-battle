@@ -1,5 +1,10 @@
 ﻿
 
+
+using Quiz_Battle.data;
+using Quiz_Battle.Models;
+using Quiz_Battle.Services;
+
 ConsoleUI ui = new ConsoleUI();
 
 while (true)
@@ -21,11 +26,11 @@ while (true)
             Console.Write(" .");
             Thread.Sleep(500);
 
-
             // Fråga efter antal spelare och deras namn
-            int numberOfPlayers= ui.AskNumberOfPlayers();
+            int numberOfPlayers = ui.AskNumberOfPlayers();
 
-            List<string> players = ui.AskPlayerNames(numberOfPlayers);
+            List<string> players =
+                ui.AskPlayerNames(numberOfPlayers);
 
             // Fråga efter antal rundor
             int rounds = ui.AskRounds();
@@ -36,8 +41,25 @@ while (true)
             // Skapa Player-objekt från namnen
             quizGame.CreatePlayers(players);
 
-            // Starta rundorna
+            // Skapa QuestionBank
+            // Frågorna laddas automatiskt i konstruktorn
+            QuestionBank questionBank = new QuestionBank();
+
+            // Starta spelet
             quizGame.PlayRounds(rounds);
+
+            // Skapa repository
+            IHighScore repository = new JsonHighScore();
+
+            // Hämta tidigare resultat
+            List<HighScoreEntry> scores =
+                repository.LoadScores();
+
+            // Lägg till alla spelares nya resultat
+            scores.AddRange(quizGame.GetHighScoreEntries());
+
+            // Spara alla resultat
+            repository.SaveScores(scores);
 
             Console.WriteLine("Spelet är slut!");
             Console.ReadKey();
@@ -54,6 +76,7 @@ while (true)
             Thread.Sleep(500);
             Console.Write(" .");
             Thread.Sleep(500);
+
             ui.ShowHighScores();
 
             break;
