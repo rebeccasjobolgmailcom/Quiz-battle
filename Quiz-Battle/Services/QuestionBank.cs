@@ -1,139 +1,167 @@
-
-using Quiz_Battle.Models;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
+using Quiz_Battle.Models;
 
-namespace Quiz_Battle.data
+namespace Quiz_Battle.Services
 {
+    //Class to represent a category of questions
+    public class CategoryData
+    {
+        public string Name { get; set; } = string.Empty;
+        public List<JsonElement> Questions { get; set; } = new List<JsonElement>();
+    }
+    //Class to represent the root of the JSON file, with a list of categorys
+    public class QuestionRoot
+    {
+        public List<CategoryData> Categories { get; set; } = new List<CategoryData>();
+    }
+    //Service class for reading questions from the JSON file and managing remaining questions
     public class QuestionBank
     {
-        private readonly string filePath =
-            Path.Combine(AppContext.BaseDirectory, "data", "questions.json");
+        private readonly Dictionary<string, List<Question>> categories = new Dictionary<string, List<Question>>();
+        private readonly Random random = new Random();
 
-        private List<Question> questions = new List<Question>();
-
-        // Läser in frågorna från JSON-filen
-        public void LoadQuestions()
+        //Constructor that loads the questions from the JSON file when the QuestionBank is instantiated
+        public QuestionBank()
         {
-            if (!File.Exists(filePath))
+            LoadQuestions();
+        }
+
+        //Clears any remaining questions and reloads all questions from the JSON file for a new game
+        public void ResetQuestions()
+        {
+            categories.Clear();
+            LoadQuestions();
+        }
+
+        //Reads the json file and turn into a list 
+        private void LoadQuestions()
+        {
+            //Looks for the file in the application's base execution directory
+            string path = Path.Combine(
+                AppContext.BaseDirectory,
+                "data",
+                "questions.json"
+                );
+
+            if (!File.Exists(path))
             {
-                throw new FileNotFoundException(
-                    "Kunde inte hitta questions.json", filePath);
+                Console.WriteLine($"Question file not found: {path}");
+                return; // If the file doesn't exist, exit the method
             }
 
-            string json = File.ReadAllText(filePath);
-
-            var data = JsonSerializer.Deserialize<QuestionDataFile>(
-                json,
-                new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-            if (data == null || data.Categories == null)
+            try
             {
-                throw new InvalidOperationException(
-                    "JSON-filen innehåller inga kategorier.");
-            }
+                string json = File.ReadAllText(path);
+                //Ignore big/small letters 
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var root = JsonSerializer.Deserialize<QuestionRoot>(json, options);
 
-            questions.Clear();
-
-            foreach (var category in data.Categories)
-            {
-                foreach (var questionData in category.Questions)
+                if (root?.Categories != null)
                 {
-                    Question question = null;
-
-                    // Skapa rätt frågetyp
-                    switch (questionData.Type?.ToLower())
+                    //Loops through all categories in the JSON file
+                    foreach (var category in root.Categories)
                     {
-                        case "multiplechoice":
-                            question = new MultipleChoiceQuestion
-                            {
-                                Text = questionData.Text ?? "",
-                                Options = questionData.Options ?? new List<string>(),
-                                CorrectIndex = questionData.CorrectIndex ?? -1,
-                                Difficulty = questionData.Difficulty ?? ""
-                            };
-                            break;
+                        var questionList = new List<Question>();
 
-                        case "truefalse":
-                            question = new TrueFalseQuestion
+                        //Loops through all questions in this category 
+                        foreach (var questionElement in category.Questions)
+                        {
+                            //Check the "type" to see if it is a multiple choice or true/false question
+                            if (questionElement.TryGetProperty("type", out JsonElement typeElement))
                             {
-                                Text = questionData.Text ?? "",
-                                Correct = questionData.Correct ?? false,
-                                Difficulty = questionData.Difficulty ?? ""
-                            };
-                            break;
-                    }
+                                string type = typeElement.GetString() ?? string.Empty;
+                                Question? question = null;
 
-                    if (question != null)
-                    {
-                        question.Category = category.Name ?? "";
-                        questions.Add(question);
+                                //Creates the correct question object based on its type
+                                if (type == "multipleChoice")
+                                {
+                                    question = JsonSerializer.Deserialize<MultipleChoiceQuestion>(questionElement.GetRawText(), options);
+                                }
+                                else if (type == "trueFalse")
+                                {
+                                    question = JsonSerializer.Deserialize<TrueFalseQuestion>(questionElement.GetRawText(), options);
+                                }
+
+                                //Save the category name and add the question to our temporary list
+                                if (question != null)
+                                {
+                                    question.Category = category.Name;
+                                    questionList.Add(question);
+                                }
+                            }
+                        }
+                        //Only add the category to our main list if it has questions left
+                        if (questionList.Count > 0)
+                        {
+                            categories[category.Name] = questionList;
+                        }
                     }
                 }
             }
-        }
-
-        // Hämtar alla kategorier
-        public List<string> GetCategories()
-        {
-            return questions
-                .Select(q => q.Category)
-                .Distinct()
-                .ToList();
-        }
-
-        // Hämtar alla frågor inom en vald kategori
-        public List<Question> GetQuestionsByCategory(string category)
-        {
-            return questions
-                .Where(q => q.Category.Equals(
-                    category,
-                    StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
-
-        // Hämtar en slumpmässig fråga från vald kategori
-        public Question GetRandomQuestion(string category)
-        {
-            List<Question> categoryQuestions =
-                GetQuestionsByCategory(category);
-
-            if (categoryQuestions.Count == 0)
+            catch (Exception ex)
             {
-                throw new InvalidOperationException(
-                    "Inga frågor hittades i kategorin.");
+                //print an error message if something goes wrong with the file reading
+                Console.WriteLine($"Error loading questions: {ex.Message}");
             }
-
-            int index = Random.Shared.Next(categoryQuestions.Count);
-
-            return categoryQuestions[index];
         }
-    }
 
-    // Hjälpklasser för att läsa JSON-strukturen
-    internal class QuestionDataFile
-    {
-        public List<CategoryData> Categories { get; set; } =
-            new List<CategoryData>();
-    }
+        //Returns a list of all categories that still have questions left
+        public List<string> GetAvailableCategories()
+        {
+            return categories.Where(kvp => kvp.Value.Count > 0).Select(kvp => kvp.Key).ToList();
+        }
+        //Returns the number of questions currently remaining in a specific category
+        public int GetQuestionCount(string category)
+        {
+            if (categories.ContainsKey(category))
+            {
+                return categories[category].Count;
+            }
+            return 0;
+        }
 
-    internal class CategoryData
-    {
-        public string? Name { get; set; }
+        //returns the number of questions left in the entire game
+        public int GetTotalQuestionCount()
+        {
+            return categories.Values.Sum(list => list.Count);
+        }
 
-        public List<QuestionData> Questions { get; set; } =
-            new List<QuestionData>();
-    }
+        //Pick, remove and then returns a random question from a category so it is not repeated
+        public Question? PullRandomQuestion(string category)
+        {
+            if (categories.ContainsKey(category) && categories[category].Count > 0)
+            {
+                //Pick a random index based on how many questions are left
+                int index = random.Next(categories[category].Count);
+                Question question = categories[category][index];
 
-    internal class QuestionData
-    {
-        public string? Type { get; set; }
-        public string? Text { get; set; }
-        public List<string>? Options { get; set; }
-        public int? CorrectIndex { get; set; }
-        public bool? Correct { get; set; }
-        public string? Difficulty { get; set; }
+                // Remove the question from the list to avoid repetition
+                categories[category].RemoveAt(index);
+                return question;
+            }
+            return null; // No questions available in this category
+        }
+
+        //Handles the menu option for picking a random category first 
+        public Question? PullRandomQuestionFromAnyCategory()
+        {
+            //Get all categoris that still have questions left
+            var availableCategories = GetAvailableCategories();
+            //Stop if there are no questions left in any category  
+            if (availableCategories.Count == 0) return null;
+
+            //Pick one of the available categories at random
+            string randomCategory = availableCategories[random.Next(availableCategories.Count)];
+            //Pull a random question from the category thats was just picked
+            return PullRandomQuestion(randomCategory);
+        }
     }
 }
+
+
+
+
