@@ -1,5 +1,8 @@
 ﻿
 
+using Quiz_Battle.data;
+using Quiz_Battle.Models;
+
 ConsoleUI ui = new ConsoleUI();
 
 while (true)
@@ -36,8 +39,23 @@ while (true)
             // Skapa Player-objekt från namnen
             quizGame.CreatePlayers(players);
 
-            // Starta rundorna
-            quizGame.PlayRounds(rounds);
+            QuestionBank questionBank = new QuestionBank();
+
+            questionBank.LoadQuestions();
+
+            quizGame.PlayRounds(rounds, questionBank, ui);
+
+            // Skapa repository
+            IHighScore repository = new JsonHighScore();
+
+            // Hämta tidigare resultat
+            List<HighScoreEntry> scores = repository.LoadScores();
+
+            // Lägg till alla spelares nya resultat
+            scores.AddRange(quizGame.GetHighScoreEntries());
+
+            // Spara alla resultat
+            repository.SaveScores(scores);
 
             Console.WriteLine("Spelet är slut!");
             Console.ReadKey();
@@ -60,8 +78,35 @@ while (true)
 
         case "3":
 
-            Console.WriteLine("Hejdå!");
+             Console.WriteLine("Hejdå!");
+             Console.ReadKey();
+
+            QuestionBank bank = new QuestionBank();
+
+            bank.LoadQuestions();
+
+            Console.WriteLine("Frågorna har lästs in!");
+
+            List<string> categories = bank.GetCategories();
+
+            foreach (string category in categories)
+            {
+                Console.WriteLine(category);
+
+                List<Question> questions =
+                    bank.GetQuestionsByCategory(category);
+
+                Console.WriteLine($"Antal frågor: {questions.Count}");
+            }
+
             Console.ReadKey();
             return;
+
+
+
+
+
     }
+
+    
 }
