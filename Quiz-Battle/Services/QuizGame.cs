@@ -3,48 +3,59 @@ using System.Collections.Generic;
 using System.Linq;
 using Quiz_Battle.Models;
 using Quiz_Battle.Services;
+using Quiz_Battle.data;
 
 public class QuizGame
 {
-    // Stores the players in the current game.
+    // Stores all players in the current game.
     private List<Player> players = new List<Player>();
 
+    // Creates a separate Player object for each name.
     public void CreatePlayers(List<string> playerNames)
     {
-        // Remove players from any previous game.
         players.Clear();
 
         foreach (string name in playerNames)
         {
-            players.Add(new Player(name));
+            Player player = new Player(name);
+            players.Add(player);
         }
     }
 
+    // Returns the players in the current game.
     public List<Player> GetPlayers()
     {
         return players;
     }
 
+    // Gives each player one turn per round.
     public void PlayRounds(int numberOfRounds)
     {
-        // Load a fresh set of questions for this game.
+        // All players share this question bank.
+        // A new game starts with a fresh set of questions.
         QuestionBank questionBank = new QuestionBank();
 
         if (questionBank.GetTotalQuestionCount() == 0)
         {
-            Console.WriteLine("Inga frågor kunde läsas in. Kontrollera data/questions.json.");
+            Console.WriteLine(
+                "Inga frågor kunde läsas in. Kontrollera data/questions.json.");
+
             return;
         }
 
         for (int round = 1; round <= numberOfRounds; round++)
         {
-            Console.WriteLine($"\n=== Runda {round} av {numberOfRounds} ===");
+            Console.WriteLine(
+                $"\n=== Runda {round} av {numberOfRounds} ===");
 
             foreach (Player player in players)
             {
+                // Check before asking the player to choose a category.
                 if (questionBank.GetTotalQuestionCount() == 0)
                 {
-                    Console.WriteLine("Alla frågor är slut. Spelet avslutas i förtid.");
+                    Console.WriteLine(
+                        "Alla frågor är slut. Spelet avslutas i förtid.");
+
                     ShowResults();
                     return;
                 }
@@ -53,18 +64,23 @@ public class QuizGame
 
                 if (question == null)
                 {
-                    Console.WriteLine("Ingen fråga kunde hämtas. Spelet avslutas i förtid.");
+                    Console.WriteLine(
+                        "Ingen fråga hämtades. Spelet avbryts.");
+
                     ShowResults();
                     return;
                 }
 
                 int basePoints = question.GetBasePoints();
-                Console.WriteLine($"\n{question.Category}, {basePoints} poäng");
+
+                Console.WriteLine(
+                    $"\n{question.Category}, {basePoints} poäng");
+
                 question.Display();
 
                 string answer;
 
-                // Invalid input does not count as an answered question.
+                // Keep asking until the player enters a valid answer.
                 while (true)
                 {
                     Console.Write("Ditt svar: ");
@@ -72,7 +88,9 @@ public class QuizGame
 
                     if (input == null)
                     {
-                        Console.WriteLine("Inmatningen avslutades. Spelet avbryts.");
+                        Console.WriteLine(
+                            "Inmatningen avslutades. Spelet avbryts.");
+
                         ShowResults();
                         return;
                     }
@@ -84,33 +102,49 @@ public class QuizGame
                         break;
                     }
 
-                    Console.WriteLine("Ogiltigt svar. Ange ett av alternativen som visas.");
+                    Console.WriteLine(
+                        "Ogiltigt svar. Ange ett av alternativen som visas.");
                 }
 
+                // The question checks the answer.
+                // Player calculates and stores the points.
                 bool isCorrect = question.CheckAnswer(answer);
-                int awardedPoints = RecordPlayerAnswer(player, isCorrect, basePoints);
+
+                int awardedPoints = RecordPlayerAnswer(
+                    player,
+                    isCorrect,
+                    basePoints);
 
                 if (isCorrect)
                 {
                     int bonus = awardedPoints - basePoints;
-                    Console.WriteLine($"Rätt! {player.Name} får {awardedPoints} poäng, varav {bonus} i seriebonus.");
+
+                    Console.WriteLine(
+                        $"Rätt! {player.Name} får {awardedPoints} poäng, " +
+                        $"varav {bonus} i seriebonus.");
                 }
                 else
                 {
-                    Console.WriteLine($"Fel. Rätt svar var: {question.GetCorrectAnswer()}. Du får 0 poäng.");
+                    Console.WriteLine(
+                        $"Fel. Rätt svar var: {question.GetCorrectAnswer()}. " +
+                        "Du får 0 poäng.");
                 }
 
-                Console.WriteLine($"Totalt: {player.Score} poäng.");
+                Console.WriteLine(
+                    $"Totalt: {player.Score} poäng.");
             }
         }
 
         ShowResults();
     }
 
-    // This input and display code can later be moved to ConsoleUI.
-    private Question? ChooseQuestion(QuestionBank questionBank, Player player)
+    // Shows available categories and returns a question.
+    private Question? ChooseQuestion(
+        QuestionBank questionBank,
+        Player player)
     {
         List<string> categories = questionBank.GetAvailableCategories();
+
         int randomChoice = categories.Count + 1;
 
         Console.WriteLine($"\n{player.Name}, välj kategori:");
@@ -118,7 +152,12 @@ public class QuizGame
         for (int i = 0; i < categories.Count; i++)
         {
             string category = categories[i];
-            Console.WriteLine($"{i + 1}. {category} ({questionBank.GetQuestionCount(category)} frågor kvar)");
+
+            int remainingQuestions =
+                questionBank.GetQuestionCount(category);
+
+            Console.WriteLine(
+                $"{i + 1}. {category} ({remainingQuestions} frågor kvar)");
         }
 
         Console.WriteLine($"{randomChoice}. Slumpa");
@@ -133,20 +172,28 @@ public class QuizGame
                 return null;
             }
 
-            if (int.TryParse(input, out int choice) && choice >= 1 && choice <= randomChoice)
+            if (int.TryParse(input, out int choice)
+                && choice >= 1
+                && choice <= randomChoice)
             {
+                // Both methods remove the selected question
+                // from the shared question bank.
                 if (choice == randomChoice)
                 {
                     return questionBank.PullRandomQuestionFromAnyCategory();
                 }
 
-                return questionBank.PullRandomQuestion(categories[choice - 1]);
+                string selectedCategory = categories[choice - 1];
+
+                return questionBank.PullRandomQuestion(selectedCategory);
             }
 
-            Console.WriteLine($"Svara med en siffra mellan 1 och {randomChoice}.");
+            Console.WriteLine(
+                $"Svara med en siffra mellan 1 och {randomChoice}.");
         }
     }
 
+    // Finds the winners by score, then by correct answers.
     public List<Player> GetWinners()
     {
         List<Player> winners = new List<Player>();
@@ -156,21 +203,34 @@ public class QuizGame
             return winners;
         }
 
-        int highestScore = players.Max(player => player.Score);
-        int mostCorrectAnswers = 0;
+        // Find the highest score.
+        int highestScore = players[0].Score;
 
-        // Only compare correct answers among the players with the highest score.
         foreach (Player player in players)
         {
-            if (player.Score == highestScore && player.CorrectAnswers > mostCorrectAnswers)
+            if (player.Score > highestScore)
+            {
+                highestScore = player.Score;
+            }
+        }
+
+        // Compare correct answers only among the top-scoring players.
+        int mostCorrectAnswers = 0;
+
+        foreach (Player player in players)
+        {
+            if (player.Score == highestScore
+                && player.CorrectAnswers > mostCorrectAnswers)
             {
                 mostCorrectAnswers = player.CorrectAnswers;
             }
         }
 
+        // More than one player can share the victory.
         foreach (Player player in players)
         {
-            if (player.Score == highestScore && player.CorrectAnswers == mostCorrectAnswers)
+            if (player.Score == highestScore
+                && player.CorrectAnswers == mostCorrectAnswers)
             {
                 winners.Add(player);
             }
@@ -179,12 +239,16 @@ public class QuizGame
         return winners;
     }
 
-    public int RecordPlayerAnswer(Player player, bool isCorrect, int basePoints)
+    // Sends the result to Player and returns the points earned.
+    public int RecordPlayerAnswer(
+        Player player,
+        bool isCorrect,
+        int basePoints)
     {
         return player.RecordAnswer(isCorrect, basePoints);
     }
 
-    // Display code can later be moved to ConsoleUI.
+    // Shows players sorted by score, then by correct answers.
     private void ShowResults()
     {
         Console.WriteLine("\n=== Slutresultat ===");
@@ -196,7 +260,10 @@ public class QuizGame
 
         foreach (Player player in sortedPlayers)
         {
-            Console.WriteLine($"{player.Name}: {player.Score} poäng ({player.CorrectAnswers} av {player.AnsweredQuestions} rätt)");
+            Console.WriteLine(
+                $"{player.Name}: {player.Score} poäng " +
+                $"({player.CorrectAnswers} av " +
+                $"{player.AnsweredQuestions} rätt)");
         }
 
         List<Player> winners = GetWinners();
@@ -207,7 +274,34 @@ public class QuizGame
         }
         else if (winners.Count > 1)
         {
-            Console.WriteLine("Delad seger mellan: " + string.Join(", ", winners.Select(player => player.Name)));
+            Console.WriteLine("Delad seger mellan:");
+
+            foreach (Player winner in winners)
+            {
+                Console.WriteLine(winner.Name);
+            }
         }
+    }
+
+    // Creates results for the highscore code to save.
+    // This method does not write to the file itself.
+    public List<HighScoreEntry> GetHighScoreEntries()
+    {
+        List<HighScoreEntry> entries = new List<HighScoreEntry>();
+
+        foreach (Player player in players)
+        {
+            HighScoreEntry entry = new HighScoreEntry
+            {
+                PlayerName = player.Name,
+                Score = player.Score,
+                CorrectAnswers = player.CorrectAnswers,
+                Date = DateTime.Now
+            };
+
+            entries.Add(entry);
+        }
+
+        return entries;
     }
 }
