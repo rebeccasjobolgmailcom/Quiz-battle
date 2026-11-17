@@ -1,81 +1,67 @@
-﻿while (true)
-{
-    Console.Clear();
-    Console.WriteLine("=========Quiz Battle========");
-    Console.WriteLine();
-    Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine("1. Spela");
-    Console.ForegroundColor = ConsoleColor.Yellow;
-    Console.WriteLine();
-    Console.WriteLine("2. Topplista");
-    Console.WriteLine();
-    Console.ForegroundColor = ConsoleColor.Cyan;
-    Console.WriteLine("3. Avsluta");
-    Console.ForegroundColor = ConsoleColor.White;
-    Console.WriteLine();
-    Console.WriteLine("============================");
-    Console.WriteLine();
-    Console.WriteLine();
-    Console.WriteLine("Ta ett val (1-3)");
+﻿
 
-    string choice = Console.ReadLine();
+ConsoleUI ui = new ConsoleUI();
+
+while (true)
+{
+    // Visa menyn och ta emot användarens val
+    string choice = ui.ShowMenu();
 
     switch (choice)
     {
         case "1":
-            Console.Write("Starting game.");
+
+            // Starta spelet
+            Console.Write("Startar spel");
             Thread.Sleep(500);
-            Console.Write(".");
+            Console.Write(" .");
             Thread.Sleep(500);
-            Console.Write(".");
+            Console.Write(" .");
             Thread.Sleep(500);
+            Console.Write(" .");
+            Thread.Sleep(500);
+
+
+            // Fråga efter antal spelare och deras namn
+            int numberOfPlayers= ui.AskNumberOfPlayers();
+
+            List<string> players = ui.AskPlayerNames(numberOfPlayers);
+
+            // Fråga efter antal rundor
+            int rounds = ui.AskRounds();
+
+            // Skapa QuizGame
+            QuizGame quizGame = new QuizGame();
+
+            // Skapa Player-objekt från namnen
+            quizGame.CreatePlayers(players);
+
+            // Starta rundorna
+            quizGame.PlayRounds(rounds);
+
+            Console.WriteLine("Spelet är slut!");
+            Console.ReadKey();
+
             break;
 
         case "2":
-            Console.WriteLine("Showing highscores...");
+
+            Console.Write("Visar highscores");
+            Thread.Sleep(500);
+            Console.Write(" .");
+            Thread.Sleep(500);
+            Console.Write(" .");
+            Thread.Sleep(500);
+            Console.Write(" .");
+            Thread.Sleep(500);
+            ui.ShowHighScores();
+
             break;
 
-     
         case "3":
-            
-            Console.WriteLine("Goodbye!");
+
+            Console.WriteLine("Hejdå!");
+            Console.ReadKey();
             return;
-
-        default:
-            Console.WriteLine("Invalid choice!");
-            break;
     }
- }
-
-// Create a new quiz game.
-QuizGame game = new QuizGame();
-
-// Add two players.
-game.CreatePlayers(new List<string>
-{
-    "Ludwig",
-    "Erik"
-});
-
-// Get the players.
-List<Player> players = game.GetPlayers();
-
-// Give Ludwig two correct answers.
-game.RecordPlayerAnswer(players[0], true, 10);
-game.RecordPlayerAnswer(players[0], true, 20);
-
-// Give Erik one correct and one incorrect answer.
-game.RecordPlayerAnswer(players[1], true, 30);
-game.RecordPlayerAnswer(players[1], false, 20);
-
-// Show the results.
-foreach (Player player in players)
-{
-    Console.WriteLine($"{player.Name}: {player.Score} points");
-}
-
-// Find the winner.
-foreach (Player winner in game.GetWinners())
-{
-    Console.WriteLine($"Winner: {winner.Name}");
 }
