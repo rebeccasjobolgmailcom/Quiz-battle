@@ -46,7 +46,7 @@ while (true)
             QuestionBank questionBank = new QuestionBank();
 
             // Starta spelet
-            quizGame.PlayRounds(rounds);
+            quizGame.PlayRounds(rounds, questionBank);
 
             // Skapa repository
             IHighScore repository = new JsonHighScore();

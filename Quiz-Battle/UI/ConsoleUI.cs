@@ -29,7 +29,7 @@ public class ConsoleUI
 
 
 
-            if (int.TryParse(Console.ReadLine(), out int rounds) && rounds > 0)
+            if (int.TryParse(Console.ReadLine(), out int rounds) && rounds > 0 && rounds<20)
             {
                 return rounds;
                 
@@ -52,11 +52,12 @@ public class ConsoleUI
 
         while (true)
         {
+            Console.Clear();
             Console.WriteLine();
             Console.WriteLine("Hur många spelare ska delta?");
+            Console.WriteLine("2-4");
 
-            if (int.TryParse(Console.ReadLine(), out numberOfPlayers)
-                && numberOfPlayers > 0 && numberOfPlayers < 4)
+            if (int.TryParse(Console.ReadLine(), out numberOfPlayers) && numberOfPlayers > 1 && numberOfPlayers < 4)
             {
                 return numberOfPlayers;
             }
