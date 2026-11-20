@@ -9,18 +9,14 @@ using System.Xml;
 
 public class QuizGame
 {
-    // Stores the players in the current game.
     private List<Player> players = new List<Player>();
     
-    // Keeps track of which questions each player has received. //J Tar bort min egen kod här!
-    //private Dictionary<Player, List<Question>> usedQuestions
-    //    = new Dictionary<Player, List<Question>>();
+
 
     public void CreatePlayers(List<string> playerNames)
-    {    //Removes previous players//J
+    {    
         players.Clear();
-        //resets questions from previous game//J Tar bort used questions här
-        //usedQuestions.Clear();
+        
 
         foreach (string name in playerNames)
         {
@@ -28,48 +24,12 @@ public class QuizGame
 
             players.Add(player);
 
-            //usedQuestions[player] = new List<Question>(); Tar bort denna raden //J
+            
         }
     }
 
 
-    // Selects a random question that the player has not received before. Adding this method starting here //J Tar bort hela min metod här
-    //private Question? GetRandomQuestion(Player player, string category, QuestionBank questionBank)
-    //{
-    //    //Added this because i got an exception error when testing program checking if player already excists in used questions dictionary //J
-    //    if (!usedQuestions.ContainsKey(player))
-    //    {
-    //        usedQuestions[player] = new List<Question>();
-    //    }
-
-       
-        
-
-    //    // Get all questions from the selected category.
-    //    List<Question> categoryQuestions =
-    //        questionBank.GetQuestionsByCategory(category);
-
-    //    // Remove questions that this player has already received.
-    //    List<Question> availableQuestions = categoryQuestions
-    //        .Where(q => !usedQuestions[player].Contains(q))
-    //        .ToList();
-
-    //    // Check if there are any questions left for this player.
-    //    if (availableQuestions.Count == 0)
-    //    {
-    //        return null;
-    //    }
-
-    //    // Select a random question.
-    //    int index = Random.Shared.Next(availableQuestions.Count);
-
-    //    Question selectedQuestion = availableQuestions[index];
-
-    //    // Save the question in this player's history.
-    //    usedQuestions[player].Add(selectedQuestion);
-
-    //    return selectedQuestion;
-    //}//Ending here//J
+    
 
 
     public List<Player> GetPlayers()
@@ -79,8 +39,7 @@ public class QuizGame
 
     public void PlayRounds(int numberOfRounds, QuestionBank questionBank) //La till questionbank här//j
     {
-        // Load a fresh set of questions for this game.
-        //QuestionBank questionBank = new QuestionBank(); //Tog bort den här raden då jag har deklarerat det i parametern //j
+  
 
         if (questionBank.GetTotalQuestionCount() == 0)
         {
@@ -94,7 +53,7 @@ public class QuizGame
 
             foreach (Player player in players)
             {
-                //Pausing this part due to previously coding players seperated. This scenario should no longer be possible //J
+                
                 if (questionBank.GetTotalQuestionCount() == 0)
                 {
                     Console.WriteLine("Alla frågor är slut. Spelet avslutas i förtid.");
@@ -104,17 +63,7 @@ public class QuizGame
 
                 Question? question = ChooseQuestion(questionBank, player);
 
-                //Adding this method instead of the one above //J
-                //bool hasQuestionsLeft = questionBank.GetAvailableCategories().Any(category =>questionBank.GetQuestionsByCategory(category).Any(q => !usedQuestions[player].Contains(q)));
-
-                //if (!hasQuestionsLeft)
-                //{
-                //    Console.WriteLine(
-                //        $"{player.Name} har inga fler frågor kvar.");
-
-                //    continue;
-                //}
-                //J
+                
 
                 if (question == null)
                 {
@@ -129,7 +78,7 @@ public class QuizGame
 
                 string answer;
 
-                // Invalid input does not count as an answered question.
+                
                 while (true)
                 {
                     Console.Write("Ditt svar: ");
@@ -176,16 +125,16 @@ public class QuizGame
         ShowResults();
     }
 
-    // This input and display code can later be moved to ConsoleUI.
+   
     private Question? ChooseQuestion(QuestionBank questionBank, Player player)
     {
         List<string> categories = questionBank.GetAvailableCategories();
-        //Lägger till denna //J
+        
         if (categories.Count == 0)
         {
             return null;
         }
-        //J
+
         int randomChoice = categories.Count + 1;
 
         Console.WriteLine($"\n{player.Name}, välj kategori:");
@@ -193,10 +142,7 @@ public class QuizGame
         for (int i = 0; i < categories.Count; i++)
         {
             string category = categories[i];
-            //Console.WriteLine($"{i + 1}. {category} ({questionBank.GetQuestionCount(category)} frågor kvar)");
-            //int remainingQuestions = questionBank.GetQuestionsByCategory(category).Count(q => !usedQuestions[player].Contains(q));
-
-            //Console.WriteLine($"{i + 1}. {category} ({remainingQuestions} frågor kvar)");
+    
 
             Console.WriteLine(
             $"{i + 1}. {category} ({questionBank.GetQuestionCount(category)} frågor kvar)"); //Ersatte det ovanför i denna for loop med detta! //J
@@ -218,16 +164,13 @@ public class QuizGame
             {
                 if (choice == randomChoice)
                 {
-                    // Select a random category. changing code for random choice//J
-                    //string randomCategory = categories[Random.Shared.Next(categories.Count)];
-
-                    //return GetRandomQuestion(player, randomCategory, questionBank);
-                     return questionBank.PullRandomQuestionFromAnyCategory(); //Original code//J Tog tillbaka orginalkoden
+                
+                     return questionBank.PullRandomQuestionFromAnyCategory(); 
                 }
 
-                return questionBank.PullRandomQuestion(categories[choice - 1]); //Changing it just a little bit//J//Changing it back
+                return questionBank.PullRandomQuestion(categories[choice - 1]); 
 
-                //return questionBank.PullRandomQuestion(categories[choice - 1]);
+                
             }
 
             Console.WriteLine($"Svara med en siffra mellan 1 och {randomChoice}.");
@@ -246,7 +189,7 @@ public class QuizGame
         int highestScore = players.Max(player => player.Score);
         int mostCorrectAnswers = 0;
 
-        // Only compare correct answers among the players with the highest score.
+        
         foreach (Player player in players)
         {
             if (player.Score == highestScore && player.CorrectAnswers > mostCorrectAnswers)
@@ -271,7 +214,7 @@ public class QuizGame
         return player.RecordAnswer(isCorrect, basePoints);
     }
 
-    // Display code can later be moved to ConsoleUI.
+    
     private void ShowResults()
     {
         Console.WriteLine("\n=== Slutresultat ===");
@@ -300,7 +243,7 @@ public class QuizGame
 
 
 
-    // Creates highscore entries for all players. //J
+    
     public List<HighScoreEntry> GetHighScoreEntries()
     {
         List<HighScoreEntry> entries = new List<HighScoreEntry>();

@@ -115,7 +115,7 @@ namespace Quiz_Battle.Services
             return categories.Where(kvp => kvp.Value.Count > 0).Select(kvp => kvp.Key).ToList();
         }
 
-        // Returns all questions in a category without removing them. //J
+        
         public List<Question> GetQuestionsByCategory(string category)
         {
             if (categories.TryGetValue(category, out List<Question>? questions))

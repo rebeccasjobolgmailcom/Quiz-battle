@@ -11,7 +11,6 @@ namespace Quiz_Battle.data
     {
         private readonly string filePath = "data/highScores.json";
 
-        // Läser in alla sparade resultat
         public List<HighScoreEntry> LoadScores()
         {
             if (!File.Exists(filePath))
@@ -26,23 +25,19 @@ namespace Quiz_Battle.data
                 return new List<HighScoreEntry>();
             }
 
-            List<HighScoreEntry> Scores =
-                JsonSerializer.Deserialize<List<HighScoreEntry>>(json);
+            List<HighScoreEntry> Scores = JsonSerializer.Deserialize<List<HighScoreEntry>>(json);
 
             return Scores ?? new List<HighScoreEntry>();
         }
 
-        // Sparar alla resultat till JSON-filen
+        
         public void SaveScores(List<HighScoreEntry> Scores)
         {
             string directory = Path.GetDirectoryName(filePath);
 
             Directory.CreateDirectory(directory);
 
-            string json = JsonSerializer.Serialize(
-                Scores,
-                new JsonSerializerOptions { WriteIndented = true }
-            );
+            string json = JsonSerializer.Serialize( Scores, new JsonSerializerOptions { WriteIndented = true } );
 
             File.WriteAllText(filePath, json);
         }

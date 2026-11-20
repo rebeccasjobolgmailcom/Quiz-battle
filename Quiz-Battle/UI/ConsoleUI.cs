@@ -80,8 +80,7 @@ public class ConsoleUI
 
             string name = Console.ReadLine()?.Trim() ?? "";
 
-            if (string.IsNullOrWhiteSpace(name) ||
-                playerNames.Contains(name, StringComparer.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(name) || playerNames.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
                 Console.WriteLine("Namnet är tomt eller redan upptaget!");
                 i--;
@@ -102,13 +101,10 @@ public class ConsoleUI
         Console.WriteLine("========= TOPPLISTA =========");
         Console.WriteLine();
 
-        // Skapa repository
         IHighScore repository = new JsonHighScore();
 
-        // Hämta sparade resultat
         List<HighScoreEntry> Scores = repository.LoadScores();
 
-        // Kontrollera om det finns några resultat
         if (Scores.Count == 0)
         {
             Console.WriteLine("Det finns inga sparade resultat ännu.");
@@ -116,16 +112,13 @@ public class ConsoleUI
             return;
         }
 
-        // Sortera resultaten och hämta de tio bästa
         List<HighScoreEntry> topTen = Scores
             .OrderByDescending(s => s.Score)
             .ThenByDescending(s => s.CorrectAnswers)
             .Take(10)
             .ToList();
 
-        // Visa resultaten
-        Console.WriteLine(
-            $"{"Placering",-12} {"Namn",-15} {"Poäng",-10} {"Antal rätt",-12} {"Datum"}");
+        Console.WriteLine( $"{"Placering",-12} {"Namn",-15} {"Poäng",-10} {"Antal rätt",-12} {"Datum"}");
 
         Console.WriteLine("---------------------------------------------------------------");
 
