@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Quiz_Battle.data;
 using Quiz_Battle.Models;
 using Quiz_Battle.Services;
-using Quiz_Battle.data;
 
 public class QuizGame
 {
@@ -29,12 +30,9 @@ public class QuizGame
     }
 
     // Gives each player one turn per round.
-    public void PlayRounds(int numberOfRounds)
+    // Program creates a new question bank for each game.
+    public void PlayRounds(int numberOfRounds, QuestionBank questionBank)
     {
-        // All players share this question bank.
-        // A new game starts with a fresh set of questions.
-        QuestionBank questionBank = new QuestionBank();
-
         if (questionBank.GetTotalQuestionCount() == 0)
         {
             Console.WriteLine(
@@ -45,8 +43,7 @@ public class QuizGame
 
         for (int round = 1; round <= numberOfRounds; round++)
         {
-            Console.WriteLine(
-                $"\n=== Runda {round} av {numberOfRounds} ===");
+            Console.WriteLine($"\n=== Runda {round} av {numberOfRounds} ===");
 
             foreach (Player player in players)
             {
@@ -64,8 +61,7 @@ public class QuizGame
 
                 if (question == null)
                 {
-                    Console.WriteLine(
-                        "Ingen fråga hämtades. Spelet avbryts.");
+                    Console.WriteLine("Ingen fråga hämtades. Spelet avbryts.");
 
                     ShowResults();
                     return;
@@ -80,7 +76,7 @@ public class QuizGame
 
                 string answer;
 
-                // Keep asking until the player enters a valid answer.
+                // Invalid input does not count as an answered question.
                 while (true)
                 {
                     Console.Write("Ditt svar: ");
@@ -130,8 +126,10 @@ public class QuizGame
                         "Du får 0 poäng.");
                 }
 
-                Console.WriteLine(
-                    $"Totalt: {player.Score} poäng.");
+                Console.WriteLine($"Totalt: {player.Score} poäng.");
+
+                Thread.Sleep(5000);
+                Console.Clear();
             }
         }
 
@@ -145,6 +143,11 @@ public class QuizGame
     {
         List<string> categories = questionBank.GetAvailableCategories();
 
+        if (categories.Count == 0)
+        {
+            return null;
+        }
+
         int randomChoice = categories.Count + 1;
 
         Console.WriteLine($"\n{player.Name}, välj kategori:");
@@ -152,9 +155,7 @@ public class QuizGame
         for (int i = 0; i < categories.Count; i++)
         {
             string category = categories[i];
-
-            int remainingQuestions =
-                questionBank.GetQuestionCount(category);
+            int remainingQuestions = questionBank.GetQuestionCount(category);
 
             Console.WriteLine(
                 $"{i + 1}. {category} ({remainingQuestions} frågor kvar)");
@@ -177,7 +178,7 @@ public class QuizGame
                 && choice <= randomChoice)
             {
                 // Both methods remove the selected question
-                // from the shared question bank.
+                // from the question bank shared by all players.
                 if (choice == randomChoice)
                 {
                     return questionBank.PullRandomQuestionFromAnyCategory();
@@ -262,8 +263,7 @@ public class QuizGame
         {
             Console.WriteLine(
                 $"{player.Name}: {player.Score} poäng " +
-                $"({player.CorrectAnswers} av " +
-                $"{player.AnsweredQuestions} rätt)");
+                $"({player.CorrectAnswers} av {player.AnsweredQuestions} rätt)");
         }
 
         List<Player> winners = GetWinners();
@@ -283,8 +283,7 @@ public class QuizGame
         }
     }
 
-    // Creates results for the highscore code to save.
-    // This method does not write to the file itself.
+    // Creates results for the highscore code in Program to save.
     public List<HighScoreEntry> GetHighScoreEntries()
     {
         List<HighScoreEntry> entries = new List<HighScoreEntry>();
