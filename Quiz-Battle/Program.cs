@@ -1,8 +1,7 @@
-﻿
-
-
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using Quiz_Battle.data;
-using Quiz_Battle.Models;
 using Quiz_Battle.Services;
 
 ConsoleUI ui = new ConsoleUI();
@@ -14,7 +13,6 @@ while (true)
     switch (choice)
     {
         case "1":
-
             Console.Write("Startar spel");
             Thread.Sleep(500);
             Console.Write(" .");
@@ -34,10 +32,12 @@ while (true)
 
             quizGame.CreatePlayers(players);
 
+            // Create a fresh question bank and start the rounds.
             QuestionBank questionBank = new QuestionBank();
 
             quizGame.PlayRounds(rounds, questionBank);
 
+            // Add the current results to the saved scores.
             IHighScore repository = new JsonHighScore();
 
             List<HighScoreEntry> scores = repository.LoadScores();
@@ -52,7 +52,6 @@ while (true)
             break;
 
         case "2":
-
             Console.Write("Visar highscores");
             Thread.Sleep(500);
             Console.Write(" .");
@@ -67,9 +66,13 @@ while (true)
             break;
 
         case "3":
-
             Console.WriteLine("Hejdå!");
             Console.ReadKey();
             return;
+
+        default:
+            Console.WriteLine("Ogiltigt val. Välj 1, 2 eller 3.");
+            Console.ReadKey();
+            break;
     }
 }
