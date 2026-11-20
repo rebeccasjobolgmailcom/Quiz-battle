@@ -1,6 +1,7 @@
 
-using System.Linq;
 using Quiz_Battle.data;
+using Quiz_Battle.Models;
+using System.Linq;
 
 public class ConsoleUI
 {
@@ -28,7 +29,7 @@ public class ConsoleUI
 
 
 
-            if (int.TryParse(Console.ReadLine(), out int rounds) && rounds > 0)
+            if (int.TryParse(Console.ReadLine(), out int rounds) && rounds > 0 && rounds<11)
             {
                 return rounds;
                 
@@ -51,11 +52,12 @@ public class ConsoleUI
 
         while (true)
         {
+            Console.Clear();
             Console.WriteLine();
             Console.WriteLine("Hur många spelare ska delta?");
+            Console.WriteLine("2-4");
 
-            if (int.TryParse(Console.ReadLine(), out numberOfPlayers)
-                && numberOfPlayers > 0 && numberOfPlayers < 4)
+            if (int.TryParse(Console.ReadLine(), out numberOfPlayers) && numberOfPlayers > 1 && numberOfPlayers < 5)
             {
                 return numberOfPlayers;
             }
@@ -78,8 +80,7 @@ public class ConsoleUI
 
             string name = Console.ReadLine()?.Trim() ?? "";
 
-            if (string.IsNullOrWhiteSpace(name) ||
-                playerNames.Contains(name, StringComparer.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(name) || playerNames.Contains(name, StringComparer.OrdinalIgnoreCase))
             {
                 Console.WriteLine("Namnet är tomt eller redan upptaget!");
                 i--;
@@ -100,13 +101,10 @@ public class ConsoleUI
         Console.WriteLine("========= TOPPLISTA =========");
         Console.WriteLine();
 
-        // Skapa repository
         IHighScore repository = new JsonHighScore();
 
-        // Hämta sparade resultat
         List<HighScoreEntry> Scores = repository.LoadScores();
 
-        // Kontrollera om det finns några resultat
         if (Scores.Count == 0)
         {
             Console.WriteLine("Det finns inga sparade resultat ännu.");
@@ -114,16 +112,13 @@ public class ConsoleUI
             return;
         }
 
-        // Sortera resultaten och hämta de tio bästa
         List<HighScoreEntry> topTen = Scores
             .OrderByDescending(s => s.Score)
             .ThenByDescending(s => s.CorrectAnswers)
             .Take(10)
             .ToList();
 
-        // Visa resultaten
-        Console.WriteLine(
-            $"{"Placering",-12} {"Namn",-15} {"Poäng",-10} {"Antal rätt",-12} {"Datum"}");
+        Console.WriteLine( $"{"Placering",-12} {"Namn",-15} {"Poäng",-10} {"Antal rätt",-12} {"Datum"}");
 
         Console.WriteLine("---------------------------------------------------------------");
 
@@ -141,5 +136,61 @@ public class ConsoleUI
         Console.WriteLine("Tryck på en tangent för att återgå till menyn.");
         Console.ReadKey();
     }
+
+
+
+    public string AskCategory(List<string> categories)
+    {
+        Console.WriteLine("Välj en kategori:");
+
+        for (int i = 0; i < categories.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}. {categories[i]}");
+        }
+
+        while (true)
+        {
+            Console.Write("Ditt val: ");
+
+            if (int.TryParse(Console.ReadLine(), out int choice)
+                && choice >= 1 && choice <= categories.Count)
+            {
+                return categories[choice - 1];
+            }
+
+            Console.WriteLine("Ogiltigt val, försök igen.");
+        }
+    }
+
+    public string AskAnswer(Question question)
+    {
+        string answer;
+
+        do
+        {
+            Console.Write("Ditt svar: ");
+            answer = Console.ReadLine() ?? "";
+
+            if (!question.IsValidAnswer(answer))
+            {
+                Console.WriteLine("Ogiltigt svar, försök igen.");
+            }
+
+        } while (!question.IsValidAnswer(answer));
+
+        return answer;
+    }
+
+
+    public void ShowQuestion(Question question)
+    {
+        Console.WriteLine();
+        Console.WriteLine($"Kategori: {question.Category}");
+        Console.WriteLine($"Svårighetsgrad: {question.Difficulty}");
+        Console.WriteLine();
+
+        question.Display();
+    }
+
 
 }
