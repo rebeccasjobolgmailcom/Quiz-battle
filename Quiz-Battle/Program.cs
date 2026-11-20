@@ -1,4 +1,4 @@
-﻿
+﻿using Quiz_Battle.Services;
 
 ConsoleUI ui = new ConsoleUI();
 
@@ -37,7 +37,8 @@ while (true)
             quizGame.CreatePlayers(players);
 
             // Starta rundorna
-            quizGame.PlayRounds(rounds);
+            QuestionBank questionBank = new QuestionBank();
+            quizGame.PlayRounds(rounds, questionBank);
 
             Console.WriteLine("Spelet är slut!");
             Console.ReadKey();
